@@ -1589,7 +1589,7 @@ cffBuilder = new Vue({
 		checkControlCondition : function(conditionsArray = [], checkExtensionActive = false, checkExtensionActiveDimmed = false){
 			var self = this,
 			isConditionTrue = 0;
-			Object.keys(conditionsArray).map(function(condition, index){
+			Object.keys(conditionsArray).forEach(function(condition, index){
 				if(conditionsArray[condition].indexOf(self.customizerFeedData.settings[condition]) !== -1)
 					isConditionTrue += 1
 			});
@@ -1607,7 +1607,7 @@ cffBuilder = new Vue({
 		checkControlOverrideColor : function(overrideConditionsArray = []){
 			var self = this,
 			isConditionTrue = 0;
-			overrideConditionsArray.map(function(condition, index){
+			overrideConditionsArray.forEach(function(condition, index){
 				if(self.checkNotEmpty(self.customizerFeedData.settings[condition]) && self.customizerFeedData.settings[condition].replace(/ /gi,'') != '#'){
 					isConditionTrue += 1
 				}

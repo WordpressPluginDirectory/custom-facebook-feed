@@ -1983,7 +1983,7 @@ body .cff_review_step1_notice .cff-btn-link:not(:last-child) {
 	color: #72777c;
 	content: "\f335";
 	display: block;
-	font: normal 20px/20px dashicons;
+	font: normal 20px/20px dashicons, serif;
 	speak: none;
 	height: 20px;
 	text-align: center;

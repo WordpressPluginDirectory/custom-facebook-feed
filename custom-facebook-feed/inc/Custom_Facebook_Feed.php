@@ -21,6 +21,8 @@ use CustomFacebookFeed\Admin\CFF_oEmbeds;
 use CustomFacebookFeed\Admin\CFF_Extensions;
 use CustomFacebookFeed\Admin\CFF_About_Us;
 use CustomFacebookFeed\Admin\CFF_Support;
+use CustomFacebookFeed\Admin\CFF_Support_Tool;
+use CustomFacebookFeed\Platform_Data;
 
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -76,6 +78,17 @@ final class Custom_Facebook_Feed{
 	 * @var CFF_Error_Reporter
 	 */
 	public $cff_error_reporter;
+
+	/**
+	 * CFF_Support_Tool.
+	 *
+	 *
+	 * @since 2.19
+	 * @access public
+	 *
+	 * @var CFF_Error_Reporter
+	 */
+	public $cff_support_tool;
 
 	/**
 	 * cff_blocks.
@@ -257,6 +270,16 @@ final class Custom_Facebook_Feed{
 	public $cff_onboarding_wizard;
 
 
+	/**
+	 * Platform_Data
+	 *
+	 *
+	 * @since 4.4
+	 * @access public
+	 *
+	 * @var Platform_Data
+	 */
+	public $platform_data_manager;
 
 
 	/**
@@ -274,7 +297,7 @@ final class Custom_Facebook_Feed{
 		if ( null === self::$instance) {
 			self::$instance = new self();
 
-			if( !class_exists('CFF_Utils') ) include CFF_PLUGIN_DIR. 'inc/CFF_Utils.php';
+			if( !class_exists('CFF_Utils') ) include_once CFF_PLUGIN_DIR. 'inc/CFF_Utils.php';
 
 
 			add_action( 'plugins_loaded', [ self::$instance, 'load_textdomain' ], 10 );
@@ -298,7 +321,6 @@ final class Custom_Facebook_Feed{
 
 			add_action('admin_init', [ self::$instance, 'cff_activation_plugin_redirect' ]);
 
-
 		}
 		return self::$instance;
 	}
@@ -311,8 +333,9 @@ final class Custom_Facebook_Feed{
  	 * @return void
 	 * @access public
  	*/
-	public function load_textdomain(){
-		load_plugin_textdomain( 'custom-facebook-feed' );
+	public function load_textdomain()
+	{
+		load_plugin_textdomain('custom-facebook-feed', false, CFF_PLUGIN_DIR_FILE_BASE . '/languages');
 	}
 
 
@@ -326,7 +349,7 @@ final class Custom_Facebook_Feed{
 	 */
 	public function init() {
 		//Load Composer Autoload
-		require CFF_PLUGIN_DIR . 'vendor/autoload.php';
+		require_once CFF_PLUGIN_DIR . 'vendor/autoload.php';
 		$this->cff_tracking 				= new CFF_Tracking();
 		$this->cff_oembed 					= new CFF_Oembed();
 		$this->cff_error_reporter			= new CFF_Error_Reporter();
@@ -352,6 +375,7 @@ final class Custom_Facebook_Feed{
 			$this->cff_blocks->load();
 		}
 
+		self::$instance->cff_support_tool = new CFF_Support_Tool();
 
 		if ( is_admin() ) {
 			$this->cff_about		= new CFF_About();
@@ -370,6 +394,9 @@ final class Custom_Facebook_Feed{
 				}
 			}
 		}
+
+		$this->platform_data_manager = new Platform_Data();
+		$this->platform_data_manager->register_hooks();
 	}
 
 	/**
@@ -379,7 +406,7 @@ final class Custom_Facebook_Feed{
  	 * @return void
 	 * @access public
  	*/
-	function group_posts_process(){
+	public function group_posts_process(){
 		$cff_cron_schedule = 'hourly';
 		$cff_cache_time = get_option( 'cff_cache_time' );
 		$cff_cache_time_unit = get_option( 'cff_cache_time_unit' );
@@ -485,7 +512,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_check_for_db_updates(){
+	public function cff_check_for_db_updates(){
 	    $db_ver = get_option( 'cff_db_version', 0 );
 	    if ( (float) $db_ver < 1.0 ) {
 	        global $wp_roles;
@@ -696,7 +723,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_activate() {
+	public function cff_activate() {
 	    $options = get_option( 'cff_style_settings' );
 
 		//Run cron twice daily when plugin is first activated for new users
@@ -786,7 +813,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_deactivate() {
+	public function cff_deactivate() {
 	    wp_clear_scheduled_hook( 'cff_cron_job');
 		wp_clear_scheduled_hook( 'cff_notification_update');
 		wp_clear_scheduled_hook( 'cff_feed_issue_email' );
@@ -885,7 +912,7 @@ final class Custom_Facebook_Feed{
 	 * @access public
 	 * @deprecated
 	 */
-	function cff_custom_css() {
+	public function cff_custom_css() {
 
 	}
 
@@ -898,7 +925,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_js() {
+	public function cff_js() {
 	    $options = get_option('cff_style_settings');
 
 	    //Link hashtags?
@@ -930,7 +957,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_ppca_check_notice_dismiss() {
+	public function cff_ppca_check_notice_dismiss() {
 	    global $current_user;
 		$user_id = $current_user->ID;
 	    if ( isset($_GET['cff_ppca_check_notice_dismiss']) && '0' == $_GET['cff_ppca_check_notice_dismiss'] ) {
@@ -947,7 +974,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_cron_custom_interval( $schedules ) {
+	public function cff_cron_custom_interval( $schedules ) {
 		$schedules['cffweekly'] = array(
 			'interval' => 3600 * 24 * 7,
 			'display'  => __( 'Weekly' )
@@ -962,7 +989,7 @@ final class Custom_Facebook_Feed{
 	 * @since 2.19
 	 * @access public
 	 */
-	function cff_feed_locator(){
+	public function cff_feed_locator(){
 
 			$feed_locator_data_array = isset($_POST['feedLocatorData']) && !empty($_POST['feedLocatorData']) && is_array($_POST['feedLocatorData']) ? $_POST['feedLocatorData'] : false;
 		  	if($feed_locator_data_array != false):

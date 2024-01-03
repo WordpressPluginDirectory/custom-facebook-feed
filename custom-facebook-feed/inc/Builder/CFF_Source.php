@@ -393,8 +393,9 @@ class CFF_Source {
 		#$urls['group'] = 'https://api.smashballoon.com/v2/facebook-group-login.php?state=' . $admin_url_state;
 
 		$sb_admin_email = get_option('admin_email');
-		$urls['page']  = 'https://connect.smashballoon.com/auth/fb/?wordpress_user=' . $sb_admin_email . '&vn=' . CFFVER . '&state=';
-		$urls['group'] = 'https://connect.smashballoon.com/auth/fb/?wordpress_user=' . $sb_admin_email . '&vn=' . CFFVER . '&state=';
+		$urls['page'] = CFF_CONNECT_URL . '?wordpress_user=' . $sb_admin_email . '&vn=' . CFFVER . '&state=';
+        $urls['group'] = CFF_CONNECT_URL . '?wordpress_user=' . $sb_admin_email . '&vn=' . CFFVER . '&state=';
+
 		$urls['stateURL'] = $admin_url_state;
 
 		return $urls;
@@ -475,8 +476,6 @@ class CFF_Source {
 				]
 			];
 		}
-
-		return false;
 	}
 
 	/**
@@ -568,8 +567,6 @@ class CFF_Source {
 				]
 			];
 		}
-
-		return false;
 	}
 
 	/**
@@ -1085,5 +1082,23 @@ class CFF_Source {
 			CFF_Utils::cff_fetchUrl($url, false);
 		}
 
+	}
+
+
+	/**
+	 * Get single source info By Id
+	 *
+	 * @since 4.2.0
+	 */
+	public static function get_single_source_info($source_id)
+	{
+		$query_args = array(
+			'id' => sanitize_text_field(wp_unslash($source_id))
+		);
+		$results = CFF_Db::source_query_byid($query_args);
+		if (!isset($results[0])) {
+			return false;
+		}
+		return $results[0];
 	}
 }

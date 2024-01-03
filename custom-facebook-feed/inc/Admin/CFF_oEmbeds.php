@@ -28,7 +28,7 @@ class CFF_oEmbeds {
 	 *
 	 * @since 4.0
 	 */
-	function __construct(){
+	public function __construct(){
 		$this->init();
 	}
 
@@ -53,7 +53,7 @@ class CFF_oEmbeds {
 	 *
 	 * @since 4.0
 	 */
-	function register_menu() {
+	public function register_menu() {
         $cap = current_user_can( 'manage_custom_facebook_feed_options' ) ? 'manage_custom_facebook_feed_options' : 'manage_options';
         $cap = apply_filters( 'cff_settings_pages_capability', $cap );
 
@@ -84,9 +84,10 @@ class CFF_oEmbeds {
 		$oembed_settings['disabled'] = true;
 		update_option( 'cff_oembed_token', $oembed_settings );
 
-		new CFF_Response( true, array(
+		$response = new CFF_Response( true, array(
 			'connectionUrl' => $this->get_connection_url()
 		) );
+		$response->send();
 	}
 
 	/**
@@ -104,9 +105,10 @@ class CFF_oEmbeds {
 		$oembed_settings['disabled'] = true;
 		update_option( 'sbi_oembed_token', $oembed_settings );
 
-		new CFF_Response( true, array(
+		$response = new CFF_Response( true, array(
 			'connectionUrl' => $this->get_connection_url()
 		) );
+		$response->send();
 	}
 
    	/**
@@ -408,6 +410,6 @@ class CFF_oEmbeds {
 	 * @since 4.0
 	 */
 	public function oembeds_manager(){
-		return CFF_View::render( 'oembeds.index' );
+		CFF_View::render( 'oembeds.index' );
 	}
 }
